@@ -41,7 +41,6 @@ function createMessageOtherement(content, sender, senderColor){
     const span = document.createElement("span");
 
     div.classList.add("message_other");
-    div.classList.add("message_self");
     span.classList.add("message_send");
     span.style.color = senderColor;
 
@@ -52,7 +51,7 @@ function createMessageOtherement(content, sender, senderColor){
     return div;
 }
 
-// Função para pegar uma cor aleatória para o usuário
+// Função para obter uma cor aleatória para o usuário
 function getColor(){
     const indexColor = Math.floor(Math.random() * colors.length);
     return colors[indexColor];
@@ -66,8 +65,9 @@ function scrollScreen(){
     });
 }
 
-// Função para processar a mensagem recebida
+// Função para processar e exibir a mensagem
 function processMessage({ data }) {
+    console.log(JSON.parse(data));
     const { userId, userName, userColor, content } = JSON.parse(data);
     const message = 
         userId === user.id 
@@ -75,6 +75,33 @@ function processMessage({ data }) {
         : createMessageOtherement(content, userName, userColor);
 
     chatMessages.appendChild(message);
+
+    // Salvar as mensagens no localStorage
+    saveMessagesToStorage(userId, userName, userColor, content);
+
+    scrollScreen();
+}
+
+// Função para salvar as mensagens no localStorage
+function saveMessagesToStorage(userId, userName, userColor, content) {
+    let allMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+    allMessages.push({ userId, userName, userColor, content });
+    localStorage.setItem("chatMessages", JSON.stringify(allMessages));
+}
+
+// Função para carregar as mensagens armazenadas do localStorage
+function loadMessagesFromStorage() {
+    const allMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+    allMessages.forEach(message => {
+        const { userId, userName, userColor, content } = message;
+        const messageElement = 
+            userId === user.id
+            ? createMessageSelfElement(content)
+            : createMessageOtherement(content, userName, userColor);
+
+        chatMessages.appendChild(messageElement);
+    });
+
     scrollScreen();
 }
 
@@ -90,9 +117,8 @@ function loginSubmit(event){
     chat.style.display = "flex";
 
     // Criar o WebSocket
-    webSocket = new WebSocket("wss://frontend-z67l.onrender.com");
+    webSocket = new WebSocket("wss://mychat-1kbw.onrender.com");
     webSocket.onmessage = processMessage;
-    
     // Salvar o nome no sessionStorage
     sessionStorage.setItem("name", loginInput.value);
 }
@@ -106,7 +132,7 @@ function storageSave(){
         chat.style.display = "flex";
 
         // Caso já tenha o nome, você pode estabelecer a conexão do WebSocket
-        webSocket = new WebSocket("wss://frontend-z67l.onrender.com");
+        webSocket = new WebSocket("wss://mychat-1kbw.onrender.com");
         webSocket.onmessage = processMessage;
     }
 }
@@ -133,6 +159,9 @@ function sendMessage(event){
 
 // Chamar a função storageSave() para verificar se o nome já está no sessionStorage
 storageSave();
+
+// Carregar mensagens armazenadas no localStorage ao iniciar
+loadMessagesFromStorage();
 
 // Adicionar eventos de submit para login e envio de mensagens
 loginForm.addEventListener("submit", loginSubmit);
