@@ -67,7 +67,6 @@ function scrollScreen(){
 
 // Função para processar e exibir a mensagem
 function processMessage({ data }) {
-    console.log(JSON.parse(data));
     const { userId, userName, userColor, content } = JSON.parse(data);
     const message = 
         userId === user.id 
@@ -119,6 +118,7 @@ function loginSubmit(event){
     // Criar o WebSocket
     webSocket = new WebSocket("wss://frontend-z67l.onrender.com");
     webSocket.onmessage = processMessage;
+    
     // Salvar o nome no sessionStorage
     sessionStorage.setItem("name", loginInput.value);
 }
