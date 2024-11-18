@@ -117,7 +117,7 @@ function loginSubmit(event){
     chat.style.display = "flex";
 
     // Criar o WebSocket
-    webSocket = new WebSocket("ws://localhost:8080");
+    webSocket = new WebSocket("wss://mychat-1kbw.onrender.com");
     webSocket.onmessage = processMessage;
     // Salvar o nome no sessionStorage
     sessionStorage.setItem("name", loginInput.value);
@@ -132,7 +132,7 @@ function storageSave(){
         chat.style.display = "flex";
 
         // Caso já tenha o nome, você pode estabelecer a conexão do WebSocket
-        webSocket = new WebSocket("ws://localhost:8080");
+        webSocket = new WebSocket("wss://mychat-1kbw.onrender.com");
         webSocket.onmessage = processMessage;
     }
 }
