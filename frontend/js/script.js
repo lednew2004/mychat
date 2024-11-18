@@ -90,6 +90,14 @@ function loginSubmit(event){
 
     // Criar o WebSocket
     webSocket = new WebSocket("wss://frontend-z67l.onrender.com");
+
+    // Adicionar evento de "abertura" da conexão WebSocket
+    webSocket.onopen = () => {
+        console.log("WebSocket conectado.");
+        // Agora que a conexão foi estabelecida, podemos enviar mensagens
+    };
+
+    // Adicionar evento de "mensagem recebida"
     webSocket.onmessage = processMessage;
     
     // Salvar o nome no sessionStorage
@@ -106,6 +114,12 @@ function storageSave(){
 
         // Caso já tenha o nome, você pode estabelecer a conexão do WebSocket
         webSocket = new WebSocket("wss://frontend-z67l.onrender.com");
+
+        // Adicionar evento de "abertura" da conexão WebSocket
+        webSocket.onopen = () => {
+            console.log("WebSocket conectado.");
+        };
+
         webSocket.onmessage = processMessage;
     }
 }
@@ -137,7 +151,12 @@ function sendMessage(event){
         // Limpar o campo de input
         chatInput.value = "";
     } else {
-        console.error("WebSocket não está aberto.");
+        console.error("WebSocket não está aberto. Tentando novamente...");
+        // Aguardar a conexão ser estabelecida e tentar novamente
+        webSocket.onopen = () => {
+            console.log("WebSocket conectado, enviando mensagem.");
+            sendMessage(event);  // Tenta novamente enviar a mensagem
+        };
     }
 }
 
