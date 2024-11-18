@@ -87,7 +87,7 @@ function loginSubmit(event){
     login.style.display = "none";
     chat.style.display = "flex";
 
-    webSocket = new WebSocket("ws://localhost:8080");
+    webSocket = new WebSocket("wss://mychat-1kbw.onrender.com");
     webSocket.onmessage = processMessage;
 };
 
