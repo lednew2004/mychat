@@ -94,12 +94,12 @@ function loginSubmit(event){
     webSocket.onmessage = processMessage;
     
     // Salvar o nome no sessionStorage
-    sessionStorage.setItem("name", loginInput.value);
+    localStorage.setItem("name", loginInput.value);
 }
 
 // Função para recuperar o nome do usuário do sessionStorage
 function storageSave(){
-    const nameStorage = sessionStorage.getItem("name");
+    const nameStorage = localStorage.getItem("name");
     if(nameStorage){
         user.name = nameStorage;
         login.style.display = "none";
