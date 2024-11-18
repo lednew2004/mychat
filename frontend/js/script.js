@@ -41,7 +41,6 @@ function createMessageOtherement(content, sender, senderColor){
     const span = document.createElement("span");
 
     div.classList.add("message_other");
-    div.classList.add("message_self");
     span.classList.add("message_send");
     span.style.color = senderColor;
 
@@ -117,14 +116,25 @@ function sendMessage(event){
 
     // Verificar se o WebSocket está aberto antes de tentar enviar
     if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+        // Criar a mensagem localmente (para exibição imediata)
+        const messageContent = chatInput.value;
+        const messageElement = createMessageSelfElement(messageContent);
+        chatMessages.appendChild(messageElement);
+
+        // Rolando para o fundo após enviar
+        scrollScreen();
+
+        // Enviar a mensagem para o servidor
         const messages = {
-            userId : user.id,
-            userName : user.name,
-            userColor : user.color,
-            content: chatInput.value
+            userId: user.id,
+            userName: user.name,
+            userColor: user.color,
+            content: messageContent
         };
 
         webSocket.send(JSON.stringify(messages));
+
+        // Limpar o campo de input
         chatInput.value = "";
     } else {
         console.error("WebSocket não está aberto.");
