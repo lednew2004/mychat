@@ -27,56 +27,85 @@ const colors = [
 const user = {id: "", name: "", color: ""};
 let webSocket;
 
+// Função para criar mensagem própria
 function createMessageSelfElement(content){
     const div = document.createElement("div");
     div.classList.add("message_self");
-    div.innerHTML = content
-
+    div.innerHTML = content;
     return div;
-};
+}
 
+// Função para criar mensagem de outro usuário
 function createMessageOtherement(content, sender, senderColor){
     const div = document.createElement("div");
     const span = document.createElement("span");
 
     div.classList.add("message_other");
-    div.classList.add("message_self");
     span.classList.add("message_send");
-    span.style.color = senderColor
+    span.style.color = senderColor;
 
     div.appendChild(span);
     span.innerHTML = sender;
-    div.innerHTML+= content;
+    div.innerHTML += content;
 
     return div;
-};
+}
 
-
+// Função para obter uma cor aleatória para o usuário
 function getColor(){
     const indexColor = Math.floor(Math.random() * colors.length);
     return colors[indexColor];
-};
+}
 
+// Função para rolar para o fundo da tela
 function scrollScreen(){
     window.scrollTo({
-        top: document.body.scroll,
+        top: document.body.scrollHeight,
         behavior: "smooth"
-    })
-};
+    });
+}
 
-function processMessage({ data }){
-    const { userId, userName, userColor, content} = JSON.parse(data);
-
+// Função para processar e exibir a mensagem
+function processMessage({ data }) {
+    console.log(JSON.parse(data));
+    const { userId, userName, userColor, content } = JSON.parse(data);
     const message = 
         userId === user.id 
         ? createMessageSelfElement(content)
-        :createMessageOtherement(content, userName, userColor);
+        : createMessageOtherement(content, userName, userColor);
 
     chatMessages.appendChild(message);
 
-    scrollScreen();
-};
+    // Salvar as mensagens no localStorage
+    saveMessagesToStorage(userId, userName, userColor, content);
 
+    scrollScreen();
+}
+
+// Função para salvar as mensagens no localStorage
+function saveMessagesToStorage(userId, userName, userColor, content) {
+    let allMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+    allMessages.push({ userId, userName, userColor, content });
+    localStorage.setItem("chatMessages", JSON.stringify(allMessages));
+}
+
+// Função para carregar as mensagens armazenadas do localStorage
+function loadMessagesFromStorage() {
+    const allMessages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+    allMessages.forEach(message => {
+        const { userId, userName, userColor, content } = message;
+        const messageElement = 
+            userId === user.id
+            ? createMessageSelfElement(content)
+            : createMessageOtherement(content, userName, userColor);
+
+        chatMessages.appendChild(messageElement);
+    });
+
+    scrollScreen();
+}
+
+// Função de login (quando o usuário submete o formulário)
 function loginSubmit(event){
     event.preventDefault();
 
@@ -87,24 +116,53 @@ function loginSubmit(event){
     login.style.display = "none";
     chat.style.display = "flex";
 
-    webSocket = new WebSocket("wss://mychat-1kbw.onrender.com");
+    // Criar o WebSocket
+    webSocket = new WebSocket("ws://localhost:8080");
     webSocket.onmessage = processMessage;
-};
+    // Salvar o nome no sessionStorage
+    sessionStorage.setItem("name", loginInput.value);
+}
 
+// Função para recuperar o nome do usuário do sessionStorage
+function storageSave(){
+    const nameStorage = sessionStorage.getItem("name");
+    if(nameStorage){
+        user.name = nameStorage;
+        login.style.display = "none";
+        chat.style.display = "flex";
+
+        // Caso já tenha o nome, você pode estabelecer a conexão do WebSocket
+        webSocket = new WebSocket("ws://localhost:8080");
+        webSocket.onmessage = processMessage;
+    }
+}
+
+// Função para enviar a mensagem
 function sendMessage(event){
     event.preventDefault();
 
-    const messages = {
-        userId : user.id,
-        userName : user.name,
-        userColor : user.color,
-        content: chatInput.value
-    };
+    // Verificar se o WebSocket está aberto antes de tentar enviar
+    if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+        const messages = {
+            userId : user.id,
+            userName : user.name,
+            userColor : user.color,
+            content: chatInput.value
+        };
 
-    webSocket.send(JSON.stringify(messages));
+        webSocket.send(JSON.stringify(messages));
+        chatInput.value = "";
+    } else {
+        console.error("WebSocket não está aberto.");
+    }
+}
 
-    chatInput.value = "";
-};
+// Chamar a função storageSave() para verificar se o nome já está no sessionStorage
+storageSave();
 
+// Carregar mensagens armazenadas no localStorage ao iniciar
+loadMessagesFromStorage();
+
+// Adicionar eventos de submit para login e envio de mensagens
 loginForm.addEventListener("submit", loginSubmit);
 chatForm.addEventListener("submit", sendMessage);

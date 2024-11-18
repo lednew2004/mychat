@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Wallpoet&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Wallpoet&display=swap');
 
 *{
-    font-family: "Wallpoet", serif;
-    font-weight: 400;
-    font-style: normal;
+    font-family: "Exo 2", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: weight;
+  font-style: normal;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
